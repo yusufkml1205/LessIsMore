@@ -25,10 +25,34 @@
         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-200">
             @if($product->variants->first())
             <div class="relative">
-                <img src="{{ asset($product->variants->first()->image_url) }}" 
+                @php
+                    // Fix path untuk Vercel - hapus 'storage/' dari awal path
+                    $imageUrl = $product->variants->first()->image_url;
+                    if (str_starts_with($imageUrl, 'storage/')) {
+                        $imageUrl = substr($imageUrl, 8); // Hapus 'storage/' (8 karakter)
+                    }
+                @endphp
+                <img src="{{ asset($imageUrl) }}" 
                      alt="{{ $product->name }}" 
                      class="w-full h-64 object-cover cursor-pointer"
-                     onclick="window.location='{{ route('products.show', $product) }}'">
+                     onclick="window.location='{{ route('products.show', $product) }}'"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <!-- Fallback jika gambar tidak load -->
+                <div class="absolute inset-0 bg-gray-100 flex items-center justify-center hidden" 
+                     style="display: none;">
+                    <div class="text-center text-gray-400">
+                        <i class="fas fa-image text-3xl mb-2"></i>
+                        <p class="text-sm">Gambar tidak tersedia</p>
+                    </div>
+                </div>
+            </div>
+            @else
+            <!-- Placeholder jika tidak ada variant -->
+            <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+                <div class="text-center text-gray-400">
+                    <i class="fas fa-image text-3xl mb-2"></i>
+                    <p class="text-sm">Tidak ada gambar</p>
+                </div>
             </div>
             @endif
             <div class="p-4">

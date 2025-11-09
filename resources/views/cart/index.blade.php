@@ -24,9 +24,21 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center space-x-4">
-                                <img src="{{ asset($item->variant->image_url) }}" 
+                                @php
+                                    // Fix path untuk Vercel
+                                    $imageUrl = $item->variant->image_url;
+                                    if (str_starts_with($imageUrl, 'storage/')) {
+                                        $imageUrl = substr($imageUrl, 8);
+                                    }
+                                @endphp
+                                <img src="{{ asset($imageUrl) }}" 
                                      alt="{{ $item->variant->shade_name }}" 
-                                     class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                     class="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <!-- Fallback image -->
+                                <div class="w-16 h-16 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center hidden">
+                                    <i class="fas fa-image text-gray-400"></i>
+                                </div>
                                 <div>
                                     <h3 class="text-sm font-medium text-gray-900">{{ $item->variant->product->name }}</h3>
                                     <p class="text-sm text-gray-500">{{ $item->variant->product->brand }}</p>
@@ -89,9 +101,23 @@
         @foreach($cartItems as $item)
         <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
             <div class="flex space-x-4">
-                <img src="{{ asset($item->variant->image_url) }}" 
-                     alt="{{ $item->variant->shade_name }}" 
-                     class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                @php
+                    // Fix path untuk Vercel
+                    $mobileImageUrl = $item->variant->image_url;
+                    if (str_starts_with($mobileImageUrl, 'storage/')) {
+                        $mobileImageUrl = substr($mobileImageUrl, 8);
+                    }
+                @endphp
+                <div class="relative">
+                    <img src="{{ asset($mobileImageUrl) }}" 
+                         alt="{{ $item->variant->shade_name }}" 
+                         class="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <!-- Fallback image -->
+                    <div class="w-20 h-20 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center hidden">
+                        <i class="fas fa-image text-gray-400"></i>
+                    </div>
+                </div>
                 <div class="flex-1">
                     <h3 class="text-sm font-medium text-gray-900 mb-1">{{ $item->variant->product->name }}</h3>
                     <p class="text-xs text-gray-500 mb-2">{{ $item->variant->product->brand }}</p>
@@ -179,4 +205,30 @@
     </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+// Handle image loading errors
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('img').forEach(img => {
+        img.addEventListener('error', function() {
+            this.style.display = 'none';
+            const fallback = this.nextElementSibling;
+            if (fallback && fallback.classList.contains('hidden')) {
+                fallback.style.display = 'flex';
+            }
+        });
+        
+        // Check if image is already broken
+        if (img.complete && img.naturalHeight === 0) {
+            img.style.display = 'none';
+            const fallback = img.nextElementSibling;
+            if (fallback && fallback.classList.contains('hidden')) {
+                fallback.style.display = 'flex';
+            }
+        }
+    });
+});
+</script>
+@endpush
 @endsection

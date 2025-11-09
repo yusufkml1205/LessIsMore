@@ -8,15 +8,31 @@
             <div id="productCarousel" class="relative rounded-lg overflow-hidden shadow-lg">
                 <div class="carousel-inner">
                     @foreach($product->variants as $key => $variant)
+                    @php
+                        // Fix path untuk Vercel
+                        $imageUrl = $variant->image_url;
+                        if (str_starts_with($imageUrl, 'storage/')) {
+                            $imageUrl = substr($imageUrl, 8);
+                        }
+                    @endphp
                     <div class="carousel-item {{ $key == 0 ? 'block' : 'hidden' }}">
-                        <img src="{{ asset($variant->image_url) }}" 
+                        <img src="{{ asset($imageUrl) }}" 
                              class="w-full h-96 object-cover rounded-lg" 
-                             alt="{{ $variant->shade_name }}">
+                             alt="{{ $variant->shade_name }}"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <!-- Fallback image -->
+                        <div class="w-full h-96 bg-gray-100 flex items-center justify-center hidden rounded-lg">
+                            <div class="text-center text-gray-400">
+                                <i class="fas fa-image text-3xl mb-2"></i>
+                                <p class="text-sm">Gambar tidak tersedia</p>
+                            </div>
+                        </div>
                     </div>
                     @endforeach
                 </div>
                 
                 <!-- Carousel Controls -->
+                @if($product->variants->count() > 1)
                 <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all" 
                         onclick="prevSlide()">
                     <i class="fas fa-chevron-left"></i>
@@ -25,17 +41,28 @@
                         onclick="nextSlide()">
                     <i class="fas fa-chevron-right"></i>
                 </button>
+                @endif
             </div>
 
             <!-- Thumbnail Images -->
+            @if($product->variants->count() > 1)
             <div class="grid grid-cols-5 gap-2 mt-4">
                 @foreach($product->variants as $key => $variant)
-                <img src="{{ asset($variant->image_url) }}" 
-     class="w-full h-16 object-cover rounded border-2 cursor-pointer carousel-thumbnail {{ $key == 0 ? 'border-black' : 'border-gray-300' }}" 
-     alt="{{ $variant->shade_name }}"
-     onclick="showSlide({{ $key }})">
+                @php
+                    // Fix path untuk Vercel
+                    $thumbUrl = $variant->image_url;
+                    if (str_starts_with($thumbUrl, 'storage/')) {
+                        $thumbUrl = substr($thumbUrl, 8);
+                    }
+                @endphp
+                <img src="{{ asset($thumbUrl) }}" 
+                     class="w-full h-16 object-cover rounded border-2 cursor-pointer carousel-thumbnail {{ $key == 0 ? 'border-black' : 'border-gray-300' }}" 
+                     alt="{{ $variant->shade_name }}"
+                     onclick="showSlide({{ $key }})"
+                     onerror="this.style.display='none';">
                 @endforeach
             </div>
+            @endif
         </div>
 
         <!-- Product Info -->
@@ -48,6 +75,7 @@
 
             <form action="{{ route('cart.store') }}" method="POST" class="space-y-4">
                 @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
                 
                 <!-- Shade Selection -->
                 <div>
@@ -56,7 +84,14 @@
                             class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:border-black focus:ring-1 focus:ring-black" required>
                         <option value="">Pilih shade</option>
                         @foreach($product->variants as $variant)
-                        <option value="{{ $variant->id }}" data-image="{{ asset($variant->image_url) }}">
+                        @php
+                            // Fix path untuk data attribute
+                            $variantImageUrl = $variant->image_url;
+                            if (str_starts_with($variantImageUrl, 'storage/')) {
+                                $variantImageUrl = substr($variantImageUrl, 8);
+                            }
+                        @endphp
+                        <option value="{{ $variant->id }}" data-image="{{ asset($variantImageUrl) }}">
                             {{ $variant->shade_name }}
                         </option>
                         @endforeach
@@ -96,33 +131,45 @@ const totalSlides = slides.length;
 
 function showSlide(index) {
     // Hide all slides
-    slides.forEach(slide => slide.classList.add('hidden'));
-    slides.forEach(slide => slide.classList.remove('block'));
+    slides.forEach(slide => {
+        slide.classList.add('hidden');
+        slide.classList.remove('block');
+    });
     
     // Show selected slide
-    slides[index].classList.remove('hidden');
-    slides[index].classList.add('block');
-    currentSlide = index;
+    if (slides[index]) {
+        slides[index].classList.remove('hidden');
+        slides[index].classList.add('block');
+        currentSlide = index;
+    }
     
     // Update thumbnail borders
     document.querySelectorAll('.carousel-thumbnail').forEach((thumb, i) => {
-        thumb.classList.toggle('border-black', i === index);
-        thumb.classList.toggle('border-gray-300', i !== index);
+        if (thumb.style.display !== 'none') {
+            thumb.classList.toggle('border-black', i === index);
+            thumb.classList.toggle('border-gray-300', i !== index);
+        }
     });
 }
 
 function nextSlide() {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    showSlide(currentSlide);
+    if (totalSlides > 1) {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        showSlide(currentSlide);
+    }
 }
 
 function prevSlide() {
-    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-    showSlide(currentSlide);
+    if (totalSlides > 1) {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        showSlide(currentSlide);
+    }
 }
 
-// Auto slide every 5 seconds
-setInterval(nextSlide, 5000);
+// Auto slide every 5 seconds jika ada lebih dari 1 gambar
+if (totalSlides > 1) {
+    setInterval(nextSlide, 5000);
+}
 
 // Update carousel when variant select changes
 document.getElementById('variant').addEventListener('change', function() {
@@ -132,7 +179,7 @@ document.getElementById('variant').addEventListener('change', function() {
         // Find and show the slide with matching image
         slides.forEach((slide, index) => {
             const img = slide.querySelector('img');
-            if (img.src.includes(imageUrl)) {
+            if (img && img.src === imageUrl) {
                 showSlide(index);
             }
         });
@@ -140,15 +187,38 @@ document.getElementById('variant').addEventListener('change', function() {
 });
 
 // Initialize thumbnail borders
-document.querySelectorAll('.carousel-thumbnail').forEach((thumb, index) => {
-    thumb.classList.toggle('border-black', index === 0);
-    thumb.classList.toggle('border-gray-300', index !== 0);
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.carousel-thumbnail').forEach((thumb, index) => {
+        if (thumb.style.display !== 'none') {
+            thumb.classList.toggle('border-black', index === 0);
+            thumb.classList.toggle('border-gray-300', index !== 0);
+        }
+    });
+});
+
+// Handle image loading errors
+document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('error', function() {
+        this.style.display = 'none';
+        const fallback = this.nextElementSibling;
+        if (fallback && fallback.classList.contains('hidden')) {
+            fallback.style.display = 'flex';
+        }
+    });
 });
 </script>
 
 <style>
 .carousel-item {
     transition: opacity 0.5s ease-in-out;
+}
+
+.hidden {
+    display: none;
+}
+
+.block {
+    display: block;
 }
 </style>
 @endpush

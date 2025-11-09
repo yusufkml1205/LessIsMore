@@ -32,9 +32,9 @@
         <!-- Hero Image -->
         <div class="max-w-4xl mx-auto mt-12">
             <div class="relative rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] transition-transform duration-500">
-                <img src="{{ asset('storage/images/hero/hero.jpg') }}"
-                     alt="Less Is More - Premium Lip Products" 
-                     class="w-full h-64 md:h-96 object-cover">
+                <img src="{{ asset('images/hero/hero.jpg') }}"
+     alt="Less Is More - Premium Lip Products" 
+     class="w-full h-64 md:h-96 object-cover">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
             </div>
         </div>
@@ -123,9 +123,12 @@
             <div class="bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02] group overflow-hidden border border-gray-100">
                 @if($product->variants->first())
                 <div class="relative overflow-hidden">
-                    <img src="{{ asset($product->variants->first()->image_url) }}" 
-                         alt="{{ $product->name }}" 
-                         class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500">
+                    @if($product->variants->first())
+<img src="{{ asset(str_replace('storage/', '', $product->variants->first()->image_url)) }}" 
+     alt="{{ $product->name }}" 
+     class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+     onerror="this.src='https://via.placeholder.com/300x300?text=Image+Not+Found'">
+@endif
                     <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
                 </div>
                 @endif
