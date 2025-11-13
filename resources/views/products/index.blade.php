@@ -2,6 +2,15 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Back to Home Button -->
+    <div class="mb-6">
+        <a href="{{ route('home') }}" 
+           class="inline-flex items-center text-gray-600 hover:text-black transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Home
+        </a>
+    </div>
+
     <!-- Header dan Subcategory Navigation -->
     <div class="text-center mb-8">
         <h1 class="text-3xl font-bold mb-4">{{ $subcategory == 'lip_cream' ? 'Lip Cream' : 'Lip Tint' }}</h1>
@@ -72,7 +81,13 @@
     <div class="text-center py-12">
         <i class="fas fa-box-open text-4xl text-gray-400 mb-4"></i>
         <h3 class="text-xl font-semibold text-gray-600">Tidak ada produk ditemukan</h3>
-        <p class="text-gray-500">Silakan pilih kategori lain.</p>
+        <p class="text-gray-500 mb-6">Silakan pilih kategori lain.</p>
+        <!-- Back to Home Button for empty state -->
+        <a href="{{ route('home') }}" 
+           class="inline-flex items-center px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors">
+            <i class="fas fa-home mr-2"></i>
+            Kembali ke Home
+        </a>
     </div>
     @endif
 </div>

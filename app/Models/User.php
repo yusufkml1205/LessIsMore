@@ -11,17 +11,17 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'age',
-    'instance',
-    'ethnicity', 
-    'occupation',
-    'gender',
-    'role',
-    'balance',
-];
+        'name',
+        'email',
+        'password',
+        'age',
+        'instance',
+        'ethnicity', 
+        'occupation',
+        'gender',
+        'role',
+        'balance',
+    ];
 
     protected $hidden = [
         'password',
@@ -39,7 +39,13 @@ class User extends Authenticatable
 
     public function cartItems()
     {
-        return $this->hasMany(\App\Models\CartItem::class);
+        return $this->hasMany(CartItem::class);
+    }
+
+    // TAMBAH INI
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 
     public function isAdmin()

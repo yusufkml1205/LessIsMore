@@ -80,6 +80,13 @@
                         <span class="ml-3">Dashboard</span>
                     </a>
                     
+                    <!-- TAMBAHKAN MENU MANAJEMEN PRODUK DI SINI -->
+                    <a href="{{ route('admin.products') }}" 
+                       class="flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.products*') ? 'bg-black text-white' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                        <i class="fas fa-box w-6 text-center"></i>
+                        <span class="ml-3">Manajemen Produk</span>
+                    </a>
+                    
                     <a href="{{ route('admin.customers') }}" 
                        class="flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.customers') ? 'bg-black text-white' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         <i class="fas fa-users w-6 text-center"></i>

@@ -61,21 +61,6 @@
                class="block px-4 py-3 hover:bg-gray-100 border-l-4 border-transparent hover:border-black">
                 Lip
             </a>
-            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-l-4 border-transparent hover:border-black text-gray-400">
-                Skin
-            </a>
-            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-l-4 border-transparent hover:border-black text-gray-400">
-                Eye
-            </a>
-            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-l-4 border-transparent hover:border-black text-gray-400">
-                Brow
-            </a>
-            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-l-4 border-transparent hover:border-black text-gray-400">
-                Skincare
-            </a>
-            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-l-4 border-transparent hover:border-black text-gray-400">
-                Other Make Up
-            </a>
         </div>
     </div>
 
@@ -101,14 +86,16 @@
                         </div>
 
                         <!-- Cart -->
-                        <a href="{{ route('cart.index') }}" class="relative p-2 hover:bg-gray-100 rounded-md">
-                            <i class="fas fa-shopping-cart"></i>
-                            @if(auth()->user()->cartItems->count() > 0)
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center cart-badge">
-                                {{ auth()->user()->cartItems->count() }}
-                            </span>
-                            @endif
-                        </a>
+<a href="{{ route('cart.index') }}" class="relative p-2 hover:bg-gray-100 rounded-md">
+    <i class="fas fa-shopping-cart"></i>
+    @if(auth()->user()->cartItems->count() > 0)
+    <span id="cartBadge" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+        {{ auth()->user()->cartItems->count() }}
+    </span>
+    @else
+    <span id="cartBadge" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center hidden"></span>
+    @endif
+</a>
 
                         <!-- Profile Dropdown -->
                         <div class="relative">

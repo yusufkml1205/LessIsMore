@@ -2,6 +2,15 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Back to Products Button -->
+    <div class="mb-6">
+        <a href="{{ route('products.index', ['category' => 'lip', 'subcategory' => $product->subcategory]) }}" 
+           class="inline-flex items-center text-gray-600 hover:text-black transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to {{ $product->subcategory == 'lip_cream' ? 'Lip Cream' : 'Lip Tint' }}
+        </a>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Product Images -->
         <div>
@@ -73,7 +82,7 @@
                 <p class="text-2xl font-bold text-black mt-4">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
             </div>
 
-            <form action="{{ route('cart.store') }}" method="POST" class="space-y-4">
+            <form action="{{ route('cart.store') }}" method="POST" class="space-y-4" id="addToCartForm">
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                 
@@ -123,12 +132,82 @@
     </div>
 </div>
 
+<!-- Simple Toast Notification - TENGAH ATAS -->
+<div id="cartToast" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-200 pointer-events-none">
+    <div class="flex items-center space-x-2">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Produk berhasil ditambahkan ke keranjang!</span>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 let currentSlide = 0;
 const slides = document.querySelectorAll('.carousel-item');
 const totalSlides = slides.length;
 
+// Simple Toast Function - SUPER CEPAT
+function showToast(message = 'Produk berhasil ditambahkan ke keranjang!') {
+    const toast = document.getElementById('cartToast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    
+    // Show toast - langsung tanpa delay
+    toast.classList.remove('opacity-0');
+    toast.classList.add('opacity-100');
+    
+    // Auto hide after 2 seconds (lebih cepat)
+    setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+    }, 2000);
+}
+
+// Update Cart Badge
+function updateCartBadge(count) {
+    const cartBadge = document.getElementById('cartBadge');
+    if (cartBadge) {
+        if (count > 0) {
+            cartBadge.textContent = count;
+            cartBadge.classList.remove('hidden');
+        } else {
+            cartBadge.classList.add('hidden');
+        }
+    }
+}
+
+// Add to Cart - VERSI CEPAT
+document.getElementById('addToCartForm').addEventListener('submit', function(e) {
+    const variantSelect = document.getElementById('variant');
+    
+    // Quick validation
+    if (!variantSelect.value) {
+        e.preventDefault();
+        showToast('Silakan pilih shade terlebih dahulu!');
+        return;
+    }
+    
+    // Show immediate feedback
+    showToast('✅ Produk ditambahkan ke keranjang!');
+    
+    // Update cart badge immediately (optimistic update)
+    const currentBadge = document.getElementById('cartBadge');
+    let currentCount = 0;
+    
+    if (currentBadge && !currentBadge.classList.contains('hidden')) {
+        currentCount = parseInt(currentBadge.textContent) || 0;
+    } else {
+        currentCount = 0;
+    }
+    
+    updateCartBadge(currentCount + 1);
+    
+    // Let form submit normally - no AJAX delay
+    // Browser akan handle redirect/response secara native (lebih cepat)
+});
+
+// Carousel Functions
 function showSlide(index) {
     // Hide all slides
     slides.forEach(slide => {
@@ -210,7 +289,7 @@ document.querySelectorAll('img').forEach(img => {
 
 <style>
 .carousel-item {
-    transition: opacity 0.5s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
 }
 
 .hidden {
@@ -219,6 +298,11 @@ document.querySelectorAll('img').forEach(img => {
 
 .block {
     display: block;
+}
+
+/* Fast toast transition */
+#cartToast {
+    transition: opacity 0.2s ease-in-out;
 }
 </style>
 @endpush

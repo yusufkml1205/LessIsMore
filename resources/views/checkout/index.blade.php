@@ -84,22 +84,7 @@
         <div class="space-y-6">
             <!-- QRIS Payment -->
             <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-                <h2 class="text-xl font-semibold mb-4 text-center">Pembayaran QRIS</h2>
-                
-                <div class="text-center mb-4">
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-4 bg-gray-50">
-                        <img src="{{ asset('storage/images/qris/qris-demo.png') }}" 
-                             alt="QRIS Payment" 
-                             class="mx-auto w-48 h-48 object-contain">
-                    </div>
-                    <p class="text-sm text-gray-600 mb-2">
-                        Scan QR code di atas untuk melakukan pembayaran
-                    </p>
-                    <p class="text-xs text-gray-500">
-                        * Simulasi pembayaran untuk keperluan demo
-                    </p>
-                </div>
-
+                <h2 class="text-xl font-semibold mb-4 text-center">Pembayaran</h2>
                 <!-- Payment Details -->
                 <div class="space-y-3 bg-gray-50 rounded-lg p-4">
                     <div class="flex justify-between text-sm">

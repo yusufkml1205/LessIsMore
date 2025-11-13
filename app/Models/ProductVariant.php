@@ -25,4 +25,10 @@ class ProductVariant extends Model
     {
         return $this->hasMany(CartItem::class);
     }
+
+    // Accessor untuk image URL - otomatis pakai asset()
+    public function getImageUrlAttribute($value)
+    {
+        return $value ? asset($value) : null;
+    }
 }
