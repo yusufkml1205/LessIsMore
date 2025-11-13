@@ -50,7 +50,7 @@ class RegisteredUserController extends Controller
         'occupation' => $request->occupation,
         'gender' => $request->gender,
         'role' => 'customer',
-        'balance' => 250000,
+        'balance' => 200000,
     ]);
 
     event(new Registered($user));
