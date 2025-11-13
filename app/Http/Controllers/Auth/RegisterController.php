@@ -39,7 +39,7 @@ class RegisterController extends Controller
             'age' => $data['age'],
             'gender' => $data['gender'],
             'role' => 'customer',
-            'balance' => 250000,
+            'balance' => 200000,
         ]);
     }
 }
