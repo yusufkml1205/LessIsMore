@@ -181,65 +181,64 @@ class AdminController extends Controller
     }
 
     public function updateProduct(Request $request, Product $product)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'category' => 'required|string',
-            'subcategory' => 'required|string',
-            'brand' => 'required|string|max:255',
-            'variants' => 'required|array|min:1',
-            'variants.*.shade_name' => 'required|string|max:255',
-            'variants.*.image' => 'sometimes|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'variants.*.id' => 'sometimes|exists:product_variants,id',
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'price' => 'required|numeric|min:0',
+        'category' => 'required|string',
+        'subcategory' => 'required|string',
+        'brand' => 'required|string|max:255',
+        'variants' => 'required|array|min:1',
+        'variants.*.shade_name' => 'required|string|max:255',
+        'variants.*.image' => 'sometimes|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'variants.*.id' => 'sometimes|exists:product_variants,id',
+    ]);
+
+    try {
+        // Update product
+        $product->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'category' => $request->category,
+            'subcategory' => $request->subcategory,
+            'brand' => $request->brand,
         ]);
 
-        try {
-            // Update product
-            $product->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'price' => $request->price,
-                'category' => $request->category,
-                'subcategory' => $request->subcategory,
-                'brand' => $request->brand,
-            ]);
+        // Update variants
+        foreach ($request->variants as $index => $variantData) {
+            if (isset($variantData['id'])) {
+                // Update existing variant
+                $variant = ProductVariant::find($variantData['id']);
+                if ($variant) {
+                    $updateData = [
+                        'variant_name' => $request->name,
+                        'shade_name' => $variantData['shade_name'],
+                    ];
 
-            // Update variants
-            foreach ($request->variants as $variantData) {
-                $variantData = (object) $variantData;
-                
-                if (isset($variantData->id)) {
-                    // Update existing variant
-                    $variant = ProductVariant::find($variantData->id);
-                    if ($variant) {
-                        $updateData = [
-                            'variant_name' => $request->name,
-                            'shade_name' => $variantData->shade_name,
-                        ];
-
-                        if (isset($variantData->image)) {
-                            // Delete old image
-                            if ($variant->image_url && file_exists(public_path($variant->image_url))) {
-                                unlink(public_path($variant->image_url));
-                            }
-                            
-                            // Save new image
-                            $image = $variantData->image;
-                            $imageName = Str::slug($request->name) . '-' . Str::slug($variantData->shade_name) . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                            $directory = public_path('images/products');
-                            
-                            $image->move($directory, $imageName);
-                            $updateData['image_url'] = 'images/products/' . $imageName;
+                    if (isset($variantData['image']) && $variantData['image']->isValid()) {
+                        // Delete old image
+                        if ($variant->image_url && file_exists(public_path($variant->image_url))) {
+                            unlink(public_path($variant->image_url));
                         }
-
-                        $variant->update($updateData);
+                        
+                        // Save new image
+                        $image = $variantData['image'];
+                        $imageName = Str::slug($request->name) . '-' . Str::slug($variantData['shade_name']) . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                        $directory = public_path('images/products');
+                        
+                        $image->move($directory, $imageName);
+                        $updateData['image_url'] = 'images/products/' . $imageName;
                     }
-                } else {
-                    // Create new variant
-                    $image = $variantData->image;
-                    $imageName = Str::slug($request->name) . '-' . Str::slug($variantData->shade_name) . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                    $variant->update($updateData);
+                }
+            } else {
+                // Create new variant
+                if (isset($variantData['image']) && $variantData['image']->isValid()) {
+                    $image = $variantData['image'];
+                    $imageName = Str::slug($request->name) . '-' . Str::slug($variantData['shade_name']) . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
                     $directory = public_path('images/products');
                     
                     $image->move($directory, $imageName);
@@ -247,18 +246,19 @@ class AdminController extends Controller
                     ProductVariant::create([
                         'product_id' => $product->id,
                         'variant_name' => $request->name,
-                        'shade_name' => $variantData->shade_name,
+                        'shade_name' => $variantData['shade_name'],
                         'image_url' => 'images/products/' . $imageName,
                     ]);
                 }
             }
-
-            return redirect()->route('admin.products')->with('success', 'Produk berhasil diperbarui! Jangan lupa commit perubahan gambar ke repository.');
-        } catch (\Exception $e) {
-            Log::error('Error updating product: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memperbarui produk: ' . $e->getMessage());
         }
+
+        return redirect()->route('admin.products')->with('success', 'Produk berhasil diperbarui! Jangan lupa commit perubahan gambar ke repository.');
+    } catch (\Exception $e) {
+        Log::error('Error updating product: ' . $e->getMessage());
+        return back()->with('error', 'Gagal memperbarui produk: ' . $e->getMessage());
     }
+}
 
     public function destroyProduct(Product $product)
     {
